@@ -1,0 +1,13 @@
+# Terraform
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+*.tfstate.*
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor
+.vscode/
+.DS_Store
