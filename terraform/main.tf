@@ -26,6 +26,7 @@ resource "aws_iam_policy" "glue_policy" {
         Action = [
           "s3:GetObject",
           "s3:PutObject",
+          "s3:DeleteObject",
           "s3:ListBucket"
         ]
         Resource = [
@@ -333,3 +334,42 @@ resource "aws_glue_job" "validate_trips_v2" {
 
   depends_on = [aws_s3_object.validate_trips_script]
 }
+
+resource "aws_s3_object" "curate_trips_script" {
+  bucket = var.bucket_name
+  key    = "scripts/curate_trips.py"
+  source = "${path.module}/../glue-scripts/curate_trips.py"
+
+  etag = filemd5("${path.module}/../glue-scripts/curate_trips.py")
+}
+
+resource "aws_glue_job" "curate_trips" {
+  name     = "curate_trips"
+  role_arn = aws_iam_role.glue_role.arn
+
+  glue_version = "4.0"
+  worker_type  = "G.1X"
+  number_of_workers = 2
+
+  command {
+    name            = "glueetl"
+    script_location = "s3://${var.bucket_name}/scripts/curate_trips.py"
+    python_version  = "3"
+  }
+
+  default_arguments = {
+    "--job-language"                     = "python"
+    "--enable-continuous-cloudwatch-log" = "true"
+    "--enable-metrics"                   = ""
+    "--TempDir"                          = "s3://${var.bucket_name}/temp/"
+  }
+
+  execution_property {
+    max_concurrent_runs = 1
+  }
+
+  depends_on = [
+    aws_s3_object.curate_trips_script
+  ]
+}
+
