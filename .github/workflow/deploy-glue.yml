@@ -1,9 +1,15 @@
-name: Deploy Glue with Terraform
+- name: Configure AWS credentials
+  uses: aws-actions/configure-aws-credentials@v4
+  with:
+    aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    aws-region: us-east-2
+
+    name: Deploy Glue Job
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
 
 jobs:
   deploy:
@@ -13,11 +19,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.6.6
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -25,10 +26,32 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
 
-      - name: Terraform Init
-        working-directory: terraform
-        run: terraform init
+      - name: Upload Glue script to S3
+        run: |
+          aws s3 cp glue-scripts/validate_trips.py \
+            s3://data-pipeline-final-demo/scripts/validate_trips.py
 
-      - name: Terraform Apply
-        working-directory: terraform
-        run: terraform apply -auto-approve
+      - name: Create or update Glue job
+        run: |
+          aws glue create-job \
+            --name validate_trips \
+            --role AWSGlueServiceRole \
+            --command '{
+              "Name": "glueetl",
+              "ScriptLocation": "s3://data-pipeline-final-demo/scripts/validate_trips.py",
+              "PythonVersion": "3"
+            }' \
+            --glue-version "4.0" \
+            --number-of-workers 2 \
+            --worker-type G.1X \
+          || aws glue update-job \
+            --job-name validate_trips \
+            --job-update '{
+              "Role": "AWSGlueServiceRole",
+              "Command": {
+                "Name": "glueetl",
+                "ScriptLocation": "s3://data-pipeline-final-demo/scripts/validate_trips.py",
+                "PythonVersion": "3"
+              }
+            }'
+

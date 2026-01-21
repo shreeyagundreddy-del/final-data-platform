@@ -304,3 +304,32 @@ resource "aws_route_table_association" "private_2_assoc" {
   subnet_id      = aws_subnet.private_subnet_2.id
   route_table_id = aws_route_table.private_rt.id
 }
+
+resource "aws_s3_object" "validate_trips_script" {
+  bucket = var.bucket_name
+  key    = "scripts/validate_trips.py"
+  source = "${path.module}/../glue-scripts/validate_trips.py"
+}
+
+resource "aws_glue_job" "validate_trips_v2" {
+  name     = "validate_trips_v2"
+  role_arn = aws_iam_role.glue_role.arn
+
+  glue_version      = "4.0"
+  worker_type       = "G.1X"
+  number_of_workers = 2
+
+  command {
+    name            = "glueetl"
+    python_version  = "3"
+    script_location = "s3://${var.bucket_name}/scripts/validate_trips.py"
+  }
+
+  default_arguments = {
+    "--job-language"   = "python"
+    "--raw_path"       = "s3://${var.bucket_name}/raw/trips/"
+    "--validated_path" = "s3://${var.bucket_name}/validated/trips/"
+  }
+
+  depends_on = [aws_s3_object.validate_trips_script]
+}

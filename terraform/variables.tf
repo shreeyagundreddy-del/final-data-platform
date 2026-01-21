@@ -21,3 +21,4 @@ variable "glue_db_raw" {
 variable "glue_db_validated" {
   default = "validated_db"
 }
+
