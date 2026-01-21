@@ -28,7 +28,7 @@ jobs:
 
       - name: Run Glue validation job
         run: |
-          aws glue start-job-run --job-name validate_trips
+          aws glue start-job-run --job-name validate_trips_v2
 
 
 
