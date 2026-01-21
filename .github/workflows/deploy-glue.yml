@@ -20,7 +20,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::<ACCOUNT_ID>:role/github-actions-glue-role
+          role-to-assume: arn:aws:iam::228120216594:role/github-actions-glue-role
           aws-region: us-east-2
 
       - name: Verify AWS identity
