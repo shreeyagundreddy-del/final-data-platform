@@ -20,8 +20,12 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::228120216594:role/github-actions-glue-role
+          role-to-assume: arn:aws:iam::<ACCOUNT_ID>:role/github-actions-glue-role
           aws-region: us-east-2
 
-      - name: Verify identity
+      - name: Verify AWS identity
         run: aws sts get-caller-identity
+
+      - name: Run Glue validation job
+        run: |
+          aws glue start-job-run --job-name validate_trips
