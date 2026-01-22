@@ -1,3 +1,13 @@
+<img width="881" height="681" alt="architecture" src="https://github.com/user-attachments/assets/fef6d0fe-304c-4a91-9778-fef7b260577b" />
+
+
+
+
+
+
+
+
+
 Final Data Platform – Master Data & Analytics Pipeline
 Overview
 
