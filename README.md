@@ -16,8 +16,6 @@ The platform is built using NYC Taxi data, with **Zone** treated as governed mas
 
 ## 🏗️ Architecture
 
-![Data Lake Architecture](./architecture.png)
-
 The platform follows a layered data lake architecture:
 
 * **Raw Layer** → Immutable ingestion of source data
